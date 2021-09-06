@@ -27,8 +27,8 @@ pub fn publish_result(result: ChessGameResult) -> ExternResult<()> {
 
     let result_hash = hash_entry(result.clone())?;
 
-    for player in vec![result.white_player, result.black_player] {
-        create_link(AgentPubKey::from(player).into(), result_hash.clone(), ())?;      
+    for player in [result.white_player, result.black_player] {
+        create_link(AgentPubKey::from(player).into(), result_hash.clone(), ())?;
     }
 
     Ok(())
