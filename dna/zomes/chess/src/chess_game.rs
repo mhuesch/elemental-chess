@@ -51,14 +51,14 @@ impl TurnBasedGame<ChessGameMove> for ChessGame {
         match game_move {
             ChessGameMove::PlacePiece { from, to } => {
                 let from = Square::from_str(from.as_str())
-                    .or(Err(WasmError::Guest("Malformed move".into())))?;
+                    .or(Err(WasmError::Guest(format!("Malformed move: {}", from).into())))?;
                 let to = Square::from_str(to.as_str())
-                    .or(Err(WasmError::Guest("Malformed move".into())))?;
+                    .or(Err(WasmError::Guest(format!("Malformed move: {}", to).into())))?;
 
                 let chess_move: ChessMove = ChessMove::new(from, to, None);
 
                 if !self.game.current_position().legal(chess_move.clone()) {
-                    return Err(WasmError::Guest("Illegal move".into()));
+                    return Err(WasmError::Guest(format!("Illegal move: {}", chess_move).into()));
                 }
                 self.game.make_move(chess_move);
 
@@ -66,12 +66,13 @@ impl TurnBasedGame<ChessGameMove> for ChessGame {
             }
             ChessGameMove::Resign => {
                 if self.game.result().is_some() {
-                    return Err(WasmError::Guest("Game was already finished".into()));
+                    return Err(WasmError::Guest("Game is already finished".into()));
                 }
 
-                let resigner_color: Color = match author_index.clone() {
+                let resigner_color: Color = match author_index {
                     0 => Color::White,
-                    _ => Color::Black,
+                    1 => Color::Black,
+                    _ => panic!("impossible: resigner index invalid"),
                 };
 
                 self.game.resign(resigner_color);
@@ -85,7 +86,7 @@ impl TurnBasedGame<ChessGameMove> for ChessGame {
         match self.game.result() {
             Some(result) => match result {
                 GameResult::WhiteCheckmates | GameResult::BlackResigns => Some(players[0].clone()),
-                _ => Some(players[1].clone()),
+                GameResult::BlackCheckmates | GameResult::WhiteResigns => Some(players[1].clone()),
             },
             None => None,
         }
