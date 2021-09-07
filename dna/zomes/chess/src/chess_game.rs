@@ -87,6 +87,7 @@ impl TurnBasedGame<ChessGameMove> for ChessGame {
             Some(result) => match result {
                 GameResult::WhiteCheckmates | GameResult::BlackResigns => Some(players[0].clone()),
                 GameResult::BlackCheckmates | GameResult::WhiteResigns => Some(players[1].clone()),
+                _ => None
             },
             None => None,
         }
